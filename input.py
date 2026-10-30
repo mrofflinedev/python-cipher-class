@@ -1,0 +1,6 @@
+name=input("Enter your name:Collins")
+print(f"Hello {name}")
+#print("Hello",name )
+num1=int(input("Enter your first number:20"))
+num2=int(input("Enter your second number:10"))
+print(f"The sum of {num1} and {num2} is {num1 + num2}")
