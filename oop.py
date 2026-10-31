@@ -116,7 +116,7 @@ shop = BusinessAccount("Eric Shop", "0734567890", 10000)
 
 
 # ==================================
-# 5. POLYMORPHISM
+# 5. POLYMORPHISM 
 # ==================================
 
 # Different objects have the same method name
