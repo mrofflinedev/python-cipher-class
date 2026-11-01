@@ -301,7 +301,7 @@ def display_all_doctors():
         print(
             f"Doctor ID: {doctor.id}, Name: {doctor.name}, "
             f"Specialization: {doctor.specialization}, "
-            f"Consultation Fee: Ksh {doctor.fee:.2f}"
+            f"Consultation Fee: Ksh {doctor.fee}"
         )
 
 
