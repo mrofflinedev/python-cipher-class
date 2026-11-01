@@ -138,7 +138,7 @@ class Patient(HospitalService):
         print(f"Patient ID: {self.patient_id}")
         print(f"Phone number: {self.phone}")
         print(f"Age: {self.age}")
-        print(f"Account balance: Ksh {self.__balance:.2f}")
+        print(f"Account balance: Ksh {self.__balance}")
 
     def process_payment(self, amount):
         if amount > 0 and amount <= self.__balance:
@@ -166,7 +166,7 @@ class Doctor:
 
 class Outpatient(Patient):
     def patient_type(self):
-        print("Outpatient Patient")
+        return "Outpatient Patient"
 
     def payment(self, amount, consultation_fee):
         total = consultation_fee + 100
@@ -179,7 +179,7 @@ class Outpatient(Patient):
 
 class Inpatient(Patient):
     def patient_type(self):
-        print("Inpatient patient")
+        return "Inpatient patient"
 
     def payment(self, amount, consultation_fee):
         total = consultation_fee + 200
@@ -206,18 +206,217 @@ class Appointment:
         print(f"Appointment Time: {self.appointment_time}")
         print(f"Appointment Status: {self.status}")
 
-# Method to confirm an appointment
-def __init__(self,confirmed,cancelled):
-  if self.status=="confirmed":
-    print("Appointment successfully confirmed!")
-  else:
-      print("Appointment cancelled")
-      
-# method for cancelling appointment
-def __init__(self,confirmed,cancelled):
-    if self.status=="cancelled":
+    def confirm(self):
+        if self.status == "cancelled":
+            print("A cancelled appointment cannot be confirmed.")
+            return
+        self.status = "confirmed"
+        print("Appointment successfully confirmed!")
+
+    def cancel(self):
+        if self.status == "cancelled":
+            print("Appointment is already cancelled.")
+            return
+        self.status = "cancelled"
         print("Appointment cancelled!")
-    else:
-        print("")          
-    
-    
+
+
+patients_list = []
+doctors_list = []
+appointments_list = []
+
+
+def _read_int(prompt):
+    while True:
+        try:
+            return int(input(prompt))
+        except ValueError:
+            print("Please enter a valid whole number.")
+
+
+def _read_float(prompt):
+    while True:
+        try:
+            return float(input(prompt))
+        except ValueError:
+            print("Please enter a valid number.")
+
+
+def register_patient():
+    patient_id = _read_int("Enter Patient ID: ")
+    if any(patient.patient_id == patient_id for patient in patients_list):
+        print("A patient with that ID is already registered.")
+        return
+
+    name = input("Enter Patient Name: ").strip()
+    age = _read_int("Enter Patient Age: ")
+    while age < 0:
+        print("Age cannot be negative.")
+        age = _read_int("Enter Patient Age: ")
+    phone = input("Enter Patient Phone Number: ").strip()
+
+    new_patient = Patient(name, patient_id, phone, age, 0.0)
+    patients_list.append(new_patient)
+    print(f"Patient {name} registered successfully!")
+    return new_patient
+
+
+def register_doctor():
+    doctor_id = _read_int("Enter Doctor ID: ")
+    if any(doctor.id == doctor_id for doctor in doctors_list):
+        print("A doctor with that ID is already registered.")
+        return
+
+    name = input("Enter Doctor Name: ").strip()
+    specialization = input("Enter Doctor Specialization: ").strip()
+    consultation_fee = _read_float("Enter Consultation Fee: ")
+    while consultation_fee < 0:
+        print("Consultation fee cannot be negative.")
+        consultation_fee = _read_float("Enter Consultation Fee: ")
+
+    new_doctor = Doctor(name, doctor_id, specialization, consultation_fee)
+    doctors_list.append(new_doctor)
+    print(f"Doctor {name} registered successfully!")
+    return new_doctor
+
+
+def display_all_patients():
+    print("All Registered Patients")
+    if not patients_list:
+        print("No patients registered.")
+        return
+    for patient in patients_list:
+        print(
+            f"Patient ID: {patient.patient_id}, Name: {patient.name}, "
+            f"Age: {patient.age}, Phone: {patient.phone}"
+        )
+
+
+def display_all_doctors():
+    print("All Registered Doctors")
+    if not doctors_list:
+        print("No doctors registered.")
+        return
+    for doctor in doctors_list:
+        print(
+            f"Doctor ID: {doctor.id}, Name: {doctor.name}, "
+            f"Specialization: {doctor.specialization}, "
+            f"Consultation Fee: Ksh {doctor.fee:.2f}"
+        )
+
+
+def display_appointments():
+    print("All Appointments")
+    if not appointments_list:
+        print("No appointments scheduled.")
+        return
+    for appointment in appointments_list:
+        appointment.display_details()
+
+
+def search_patient():
+    patient_id = _read_int("Enter Patient ID to search: ")
+    patient = next(
+        (patient for patient in patients_list if patient.patient_id == patient_id),
+        None,
+    )
+    if patient is None:
+        print("Patient not found.")
+        return None
+    print(
+        f"Patient ID: {patient.patient_id}, Name: {patient.name}, "
+        f"Age: {patient.age}, Phone: {patient.phone}"
+    )
+    return patient
+
+
+def search_doctor():
+    doctor_id = _read_int("Enter Doctor ID to search: ")
+    doctor = next((doctor for doctor in doctors_list if doctor.id == doctor_id), None)
+    if doctor is None:
+        print("Doctor not found.")
+        return None
+    print(
+        f"Doctor ID: {doctor.id}, Name: {doctor.name}, "
+        f"Specialization: {doctor.specialization}"
+    )
+    return doctor
+
+
+def search_appointments_by_date():
+    appointment_date = input("Enter Appointment Date (YYYY-MM-DD): ").strip()
+    matches = [
+        appointment
+        for appointment in appointments_list
+        if appointment.appointment_date == appointment_date
+    ]
+    if not matches:
+        print(f"No appointments found on {appointment_date}.")
+        return []
+    for appointment in matches:
+        appointment.display_details()
+    return matches
+
+
+def book_appointment():
+    doctor_id = _read_int("Enter Doctor ID for the appointment: ")
+    patient_id = _read_int("Enter Patient ID for the appointment: ")
+    appointment_date = input("Enter Appointment Date (YYYY-MM-DD): ").strip()
+    appointment_time = input("Enter Appointment Time (HH:MM): ").strip()
+
+    doctor = next((doctor for doctor in doctors_list if doctor.id == doctor_id), None)
+    patient = next(
+        (patient for patient in patients_list if patient.patient_id == patient_id),
+        None,
+    )
+    if doctor is None or patient is None:
+        print("Invalid Doctor ID or Patient ID. Please register them first.")
+        return None
+
+    appointment = Appointment(doctor, patient, appointment_date, appointment_time)
+    appointments_list.append(appointment)
+    print(
+        f"Appointment booked successfully for {patient.name} with "
+        f"Dr. {doctor.name} on {appointment_date} at {appointment_time}."
+    )
+    return appointment
+
+
+def run_hospital_system():
+    while True:
+        print("\nHospital Management Menu")
+        print("1. Register a patient")
+        print("2. Register a doctor")
+        print("3. Display patients")
+        print("4. Display doctors")
+        print("5. Book an appointment")
+        print("6. Display appointments")
+        print("7. Search for a patient")
+        print("8. Search for a doctor")
+        print("9. Search appointments by date")
+        print("10. Exit")
+
+        option = input("Choose an option: ").strip()
+        actions = {
+            "1": register_patient,
+            "2": register_doctor,
+            "3": display_all_patients,
+            "4": display_all_doctors,
+            "5": book_appointment,
+            "6": display_appointments,
+            "7": search_patient,
+            "8": search_doctor,
+            "9": search_appointments_by_date,
+        }
+        if option == "10":
+            print("Exiting the hospital management system.")
+            return
+        action = actions.get(option)
+        if action is None:
+            print("Invalid option. Please try again.")
+        else:
+            action()
+
+
+if __name__ == "__main__":
+    run_hospital_system()
